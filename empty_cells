@@ -1,1 +1,60 @@
 #!/bin/bash
+
+# Assignment 2 - CITS4407: empty_cells
+# Author: Tyrone Tran
+# Student ID: 24814799
+# Date: 2025-04-27
+# Description: This script counts the number of empty cells in each column of a input file.
+# Usage: ./empty_cells <input_file> <separator>
+
+# ---- VALIDATE INPUT ARGUMENTS ----
+# Check if the number of arguments is correct
+if [[ $# -ne 2 ]]
+then
+	echo "Error: The script takes exactly 2 arguments but got $# arguments." > /dev/stderr
+    echo "Usage: ./empty_cells <input_file> <separator>" > /dev/stderr
+	exit 1
+fi
+
+# Check if the data input file exists and not empty
+if [[ ! -f "$1" ]]
+then
+	echo "Error: The specified input file "$1" does not exist or not a regular file." > /dev/stderr
+	exit 1
+elif [[ ! -s "$1" ]]
+then
+	echo "Error: The specified input file "$1" is empty." > /dev/stderr
+	exit 1
+fi
+
+file="$1"
+separator="$2"
+
+# ---- PROCESSING THE FILE ----
+# Use awk to process the file
+awk -F "$separator" '
+BEGIN {
+    columns=0
+}
+NR==1 {
+    # Store headers
+    for (i=1; i<=NF; i++) {
+        headers[i] = $i
+        empty_counts[i] = 0
+    }
+    columns = NF
+}
+NR>1 {
+    # Count empty fields
+    for (i=1; i<=columns; i++) {
+        if ($i ~ /^$/) {
+            empty_counts[i]++
+        }
+    }
+}
+END {
+    # Print results
+    for (i=1; i<=columns; i++) {
+        print headers[i] ": " empty_counts[i]
+    }
+}' "$file"
