@@ -39,6 +39,7 @@ BEGIN {
 NR==1 {
     # Store headers
     for (i=1; i<=NF; i++) {
+        sub(/\r$/, "", $i)  # Remove trailing \r
         headers[i] = $i
         empty_counts[i] = 0
     }
@@ -47,6 +48,7 @@ NR==1 {
 NR>1 {
     # Count empty fields
     for (i=1; i<=columns; i++) {
+        sub(/\r$/, "", $i)  # Remove trailing \r
         if ($i ~ /^$/) {
             empty_counts[i]++
         }
