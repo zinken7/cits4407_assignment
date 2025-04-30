@@ -1,1 +1,63 @@
 #!/bin/bash
+
+# Assignment 2 - CITS4407: preprocess
+# Author: Tyrone Tran
+# Student ID: 24814799
+# Date: 2025-04-29
+# Description: This script sends to output file a cleaned version of the input file (Data cleaning).
+# Usage: ./preprocess <input_file>
+
+# ---- VALIDATE INPUT ARGUMENTS ----
+# Check if the number of arguments is correct
+if [[ $# -ne 1 ]]
+then
+	echo "Error: The script takes exactly 1 argument but got $# arguments." > /dev/stderr
+    echo "Usage: ./empty_cells <input_file>" > /dev/stderr
+	exit 1
+fi
+
+# Check if the data input file exists and not empty
+if [[ ! -f "$1" ]]
+then
+	echo "Error: The specified input file "$1" does not exist or not a regular file." > /dev/stderr
+	exit 1
+elif [[ ! -s "$1" ]]
+then
+	echo "Error: The specified input file "$1" is empty." > /dev/stderr
+	exit 1
+fi
+
+input_file="$1"
+output_file="cleaned_data.tsv"
+
+# ---- DATA CLEANING ----
+# Get the maximum ID from the first column
+max_id=$(tail -n +2 "$input_file" | cut -d';' -f1 | sort -rn | head -n 1)
+
+# Delete non-ASCII characters from the file before using awk to clean the data
+tr -cd '\0-\177' < "$input_file" | tr -d '\r' | awk -F ';' -v max_id="$max_id" '
+BEGIN {
+    # Set output field separator to tab
+    OFS = "\t"
+}
+NR == 1 {
+    # Store headers
+    gsub(/;/, OFS);
+    print $0
+}
+NR > 1 {
+    # Set ID for the row with empty ID
+    if ($1 ~ /^$/) {
+        ++max_id
+        $1 = max_id
+    }
+
+    for (i=1; i<=NF; i++) {
+        # Change format of floating-point numbers to "."
+        if ($i ~ /[0-9],[0-9]/) {
+            gsub(/,/, ".", $i)
+        }
+    }
+    print $0
+}
+' > "$output_file"
