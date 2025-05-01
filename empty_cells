@@ -4,7 +4,7 @@
 # Author: Tyrone Tran
 # Student ID: 24814799
 # Date: 2025-04-27
-# Description: This script counts the number of empty cells in each column of a input file.
+# Description: This script counts the number of empty cells in each column of a input file and print to standard output.
 # Usage: ./empty_cells <input_file> <separator>
 
 # ---- VALIDATE INPUT ARGUMENTS ----
@@ -27,19 +27,18 @@ then
 	exit 1
 fi
 
-file="$1"
+input_file="$1"
 separator="$2"
 
 # ---- PROCESSING THE FILE ----
 # Use awk to process the file
-awk -F "$separator" '
+tr -d "\r" < "$input_file" | awk -F "$separator" '
 BEGIN {
     columns=0
 }
 NR==1 {
     # Store headers
     for (i=1; i<=NF; i++) {
-        sub(/\r$/, "", $i)  # Remove trailing \r
         headers[i] = $i
         empty_counts[i] = 0
     }
@@ -48,7 +47,6 @@ NR==1 {
 NR>1 {
     # Count empty fields
     for (i=1; i<=columns; i++) {
-        sub(/\r$/, "", $i)  # Remove trailing \r
         if ($i ~ /^$/) {
             empty_counts[i]++
         }
@@ -59,4 +57,4 @@ END {
     for (i=1; i<=columns; i++) {
         print headers[i] ": " empty_counts[i]
     }
-}' "$file"
+}'
