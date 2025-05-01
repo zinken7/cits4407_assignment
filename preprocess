@@ -4,7 +4,7 @@
 # Author: Tyrone Tran
 # Student ID: 24814799
 # Date: 2025-04-29
-# Description: This script sends to output file a cleaned version of the input file (Data cleaning).
+# Description: This script sends to standard output a cleaned version of the input file (Data cleaning).
 # Usage: ./preprocess <input_file>
 
 # ---- VALIDATE INPUT ARGUMENTS ----
@@ -12,7 +12,7 @@
 if [[ $# -ne 1 ]]
 then
 	echo "Error: The script takes exactly 1 argument but got $# arguments." > /dev/stderr
-    echo "Usage: ./empty_cells <input_file>" > /dev/stderr
+    echo "Usage: ./preprocess <input_file>" > /dev/stderr
 	exit 1
 fi
 
@@ -28,24 +28,14 @@ then
 fi
 
 input_file="$1"
-output_file="cleaned_data.tsv"
 
 # ---- DATA CLEANING ----
 # Get the maximum ID from the first column
-max_id=$(tail -n +2 "$input_file" | cut -d';' -f1 | sort -rn | head -n 1)
+max_id=$(tail -n +2 "$input_file" | cut -d";" -f1 | sort -rn | head -n 1)
 
-# Delete non-ASCII characters from the file before using awk to clean the data
-tr -cd '\0-\177' < "$input_file" | tr -d '\r' | awk -F ';' -v max_id="$max_id" '
-BEGIN {
-    # Set output field separator to tab
-    OFS = "\t"
-}
-NR == 1 {
-    # Store headers
-    gsub(/;/, OFS);
-    print $0
-}
-NR > 1 {
+# Delete non-ASCII characters, trailing \r from the file before using awk to clean the data then covert separator to tab character
+tr -cd "\0-\177" < "$input_file" | tr -d "\r" | awk -F ";" -v OFS=";" -v max_id="$max_id" '
+{
     # Set ID for the row with empty ID
     if ($1 ~ /^$/) {
         ++max_id
@@ -58,6 +48,6 @@ NR > 1 {
             gsub(/,/, ".", $i)
         }
     }
-    print $0
+    print
 }
-' > "$output_file"
+'| tr ";" "\t"
