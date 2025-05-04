@@ -1,1 +1,91 @@
 #!/bin/bash
+
+# Assignment 2 - CITS4407: analysis
+# Author: Tyrone Tran
+# Student ID: 24814799
+# Date: 2025-04-30
+# Description: This script queries information from a input file, calculate and send the results to standard output.
+# Usage: ./analysis <input_file> <separator>
+
+# ---- VALIDATE INPUT ARGUMENTS ----
+# Check if the number of arguments is correct
+if [[ $# -ne 2 ]]
+then
+	echo "Error: The script takes exactly 2 arguments but got $# arguments." > /dev/stderr
+    echo "Usage: ./analysis <input_file> <separator>" > /dev/stderr
+	exit 1
+fi
+
+# Check if the data input file exists and not empty
+if [[ ! -f "$1" ]]
+then
+	echo "Error: The specified input file $1 does not exist or not a regular file." > /dev/stderr
+	exit 1
+elif [[ ! -s "$1" ]]
+then
+	echo "Error: The specified input file $1 is empty." > /dev/stderr
+	exit 1
+fi
+
+input_file="$1"
+separator="$2"
+
+# ---- QUERY DATA FROM INPUT FILE ----
+tail -n +2 "$input_file" | tr -s " " | awk -F "$separator" '
+# Count the most frequent elements in an array
+function count_most_frequent(input_data, delimiter, type) {
+	delete data
+    delete most_frequents
+	n = 0
+
+	# Split the input data into an array and count the occurrences of each element
+	for (i in input_data) {
+		split(input_data[i], temp, delimiter)
+		for (j in temp) {
+			if (temp[j] == "") continue
+			if (temp[j] in data) {
+				data[temp[j]]++
+			} else {
+				data[temp[j]] = 1
+			}
+		}
+	}
+	
+	# Find the most frequent elements
+	max_count = 0
+	for (i in data) {
+		if (data[i] > max_count) {
+			max_count = data[i]
+			delete most_frequents
+			n = 0
+			most_frequents[++n] = i
+		} else if (data[i] == max_count) {
+			most_frequents[++n] = i
+		}
+	}
+	
+	# Print the most frequent elements
+	if (n < 1) {
+		printf("Do not have any %s\n", type)
+		return
+	} else if (n > 1) {
+		printf("The most %s are:\n", type)
+		for (i in most_frequents) {
+			printf("%s\n", most_frequents[i])
+		}
+		printf("found in %d games\n", max_count)
+		return
+	}
+	printf("The most %s is %s found in %d games\n", type, most_frequents[n], max_count)
+}
+NF {
+	mechanics[NR] = $13
+	styles[NR] = $14
+}
+END {
+	# Count the most popular game mechanics
+	count_most_frequent(mechanics, ", ", "popular game mechanics")
+	# Count the most style of game
+	count_most_frequent(styles, ", ", "style of game")
+}
+'
