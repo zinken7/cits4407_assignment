@@ -78,14 +78,77 @@ function count_most_frequent(input_data, delimiter, type) {
 	}
 	printf("The most %s is %s found in %d games\n", type, most_frequents[n], max_count)
 }
+
+# Calculate the average of a numeric array
+function calculate_average(input_data) {
+	sum = 0
+	count = 0
+	for (i in input_data) {
+		sum += input_data[i]
+		count++
+	}
+	if (count == 0) {
+		return 0
+	}
+	return sum / count
+}
+
+# Calculate the correlation coefficient between two variables
+function calculate_correlation_coefficient(x, y, type_x, type_y) {
+	sum_xy = 0
+    sum_x2 = 0
+    sum_y2 = 0
+	
+	len_x = length(x)
+	len_y = length(y)
+	if (len_x != len_y) {
+		print "Error: The lengths of the two input arrays are not equal."
+		return 0
+	}
+	mean_x = calculate_average(x)
+	mean_y = calculate_average(y)
+
+	for (i in x) {
+		sum_xy += (x[i] - mean_x) * (y[i] - mean_y)
+		sum_x2 += (x[i] - mean_x) * (x[i] - mean_x)
+		sum_y2 += (y[i] - mean_y) * (y[i] - mean_y)
+	}
+	if (sum_x2 == 0 || sum_y2 == 0) {
+		print "Error: The variance of one of the variables is zero."
+		return 0
+	}
+	correlation = sum_xy / sqrt(sum_x2 * sum_y2)
+	printf("The correlation between the %s and %s is %.3f\n", type_x, type_y, correlation)
+}
 NF {
 	mechanics[NR] = $13
 	styles[NR] = $14
+
+	if ($3 != "") {
+		years[NR] = $3
+	} else {
+		years[NR] = 0
+	}
+
+	if ($9 != "") {
+		avg_ratings[NR] = $9
+	} else {
+		avg_ratings[NR] = 0
+	}
+	
+	if ($11 != "") {
+		complexities[NR] = $11
+	} else {
+		complexities[NR] = 0
+	}
 }
 END {
 	# Count the most popular game mechanics
 	count_most_frequent(mechanics, ", ", "popular game mechanics")
 	# Count the most style of game
 	count_most_frequent(styles, ", ", "style of game")
+	# Calculate the correlation coefficient
+	calculate_correlation_coefficient(years, avg_ratings, "year of publication", "the average rating")
+	calculate_correlation_coefficient(complexities, avg_ratings, "complexity of a game", "its average rating")
 }
 '
