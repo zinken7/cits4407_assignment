@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Assignment 2 - CITS4407: empty_cells
 # Author: Tyrone Tran
@@ -19,19 +19,26 @@ fi
 # Check if the data input file exists and not empty
 if [[ ! -f "$1" ]]
 then
-	echo "Error: The specified input file "$1" does not exist or not a regular file." > /dev/stderr
+	echo "Error: The specified input file $1 does not exist or not a regular file." > /dev/stderr
 	exit 1
 elif [[ ! -s "$1" ]]
 then
-	echo "Error: The specified input file "$1" is empty." > /dev/stderr
+	echo "Error: The specified input file $1 is empty." > /dev/stderr
 	exit 1
+fi
+
+# Check if the separator is not empty
+if [[ -z "$2" ]]
+then
+    echo "Error: The separator cannot be empty." > /dev/stderr
+    exit 1
 fi
 
 input_file="$1"
 separator="$2"
 
 # ---- PROCESSING THE FILE ----
-# Use awk to process the file
+# Remove the Windows line endings before using awk to process the file
 tr -d "\r" < "$input_file" | awk -F "$separator" '
 BEGIN {
     columns=0
@@ -45,9 +52,9 @@ NR==1 {
     columns = NF
 }
 NR>1 {
-    # Count empty fields
+    # Count empty fields or contains only whitespace characters (spaces, tabs, etc.) fields
     for (i=1; i<=columns; i++) {
-        if ($i ~ /^$/) {
+        if ($i ~ /^[[:space:]]*$/) {
             empty_counts[i]++
         }
     }

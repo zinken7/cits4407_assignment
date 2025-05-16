@@ -4,6 +4,29 @@
 
 This project analyzes board game data from the Board Games Geek dataset to identify trends and correlations in game popularity, complexity, and ratings. It includes data preprocessing, quality checking, and analysis scripts written in Bash.
 
+### Data Structure Information
+
+The Board Games Geek dataset contains the following key columns:
+
+```markdown
+| Column   | Name               | Description                            |
+| -------- | ------------------ | -------------------------------------- |
+| 1        | ID                 | Unique game identifier                 |
+| 2        | Name               | Game title                             |
+| 3        | Year Published     | Release year                           |
+| 4        | Min Players        | Minimum number of players              |
+| 5        | Max Players        | Maximum number of players              |
+| 6        | Play Time          | Average play time in minutes           |
+| 7        | Min Age            | Minimum recommended age                |
+| 8        | Users Rated        | Number of users who rated the game     |
+| 9        | Rating Average     | Average user rating (0-10)             |
+| 10       | BGG Rank           | BoardGameGeek ranking                  |
+| 11       | Complexity Average | Game complexity rating (0-5)           |
+| 12       | Owned Users        | Number of users who own the game       |
+| 13       | Mechanics          | Game mechanics (comma-separated list)  |
+| 14       | Domains            | Game categories (comma-separated list) |
+```
+
 ## Scripts
 
 ### `empty_cells`
@@ -54,6 +77,11 @@ Analyzes the cleaned data to answer research questions:
 ```bash
 ./analysis bgg_dataset.tsv
 ```
+
+#### Notes
+
+- If the numeric input field is empty, it will be treated as 0.
+- If the string input field is empty, it will be treated as an empty string.
 
 ## Data
 

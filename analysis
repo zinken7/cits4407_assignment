@@ -1,18 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Assignment 2 - CITS4407: analysis
 # Author: Tyrone Tran
 # Student ID: 24814799
 # Date: 2025-04-30
 # Description: This script queries information from a input file, calculate and send the results to standard output.
-# Usage: ./analysis <input_file> <separator>
+# Usage: ./analysis <input_file>
 
 # ---- VALIDATE INPUT ARGUMENTS ----
 # Check if the number of arguments is correct
-if [[ $# -ne 2 ]]
+if [[ $# -ne 1 ]]
 then
-	echo "Error: The script takes exactly 2 arguments but got $# arguments." > /dev/stderr
-    echo "Usage: ./analysis <input_file> <separator>" > /dev/stderr
+	echo "Error: The script takes exactly 1 argument but got $# arguments." > /dev/stderr
+    echo "Usage: ./analysis <input_file>" > /dev/stderr
 	exit 1
 fi
 
@@ -28,10 +28,9 @@ then
 fi
 
 input_file="$1"
-separator="$2"
 
 # ---- QUERY DATA FROM INPUT FILE ----
-tail -n +2 "$input_file" | tr -s " " | awk -F "$separator" '
+tail -n +2 "$input_file" | tr -s " " | awk -F "\t" '
 # Count the most frequent elements in an array
 function count_most_frequent(input_data, delimiter, type) {
 	delete data
@@ -71,7 +70,7 @@ function count_most_frequent(input_data, delimiter, type) {
 	} else if (n > 1) {
 		printf("The most %s are:\n", type)
 		for (i in most_frequents) {
-			printf("%s\n", most_frequents[i])
+			printf("- %s\n", most_frequents[i])
 		}
 		printf("found in %d games\n", max_count)
 		return
@@ -120,33 +119,40 @@ function calculate_correlation_coefficient(x, y, type_x, type_y) {
 	correlation = sum_xy / sqrt(sum_x2 * sum_y2)
 	printf("The correlation between the %s and %s is %.3f\n", type_x, type_y, correlation)
 }
-NF {
-	mechanics[NR] = $13
-	styles[NR] = $14
 
+NF {
+	# Get the game mechanics and domains
+	mechanics[NR] = $13
+	domains[NR] = $14
+
+	# Get the year of publication
 	if ($3 != "") {
 		years[NR] = $3
 	} else {
 		years[NR] = 0
 	}
 
+	# Get the average rating
 	if ($9 != "") {
 		avg_ratings[NR] = $9
 	} else {
 		avg_ratings[NR] = 0
 	}
 	
+	# Get the complexity of a game
 	if ($11 != "") {
 		complexities[NR] = $11
 	} else {
 		complexities[NR] = 0
 	}
 }
+
 END {
 	# Count the most popular game mechanics
 	count_most_frequent(mechanics, ", ", "popular game mechanics")
-	# Count the most style of game
-	count_most_frequent(styles, ", ", "style of game")
+	# Count the most popular game domains
+	count_most_frequent(domains, ", ", "game domain")
+	printf("\n")
 	# Calculate the correlation coefficient
 	calculate_correlation_coefficient(years, avg_ratings, "year of publication", "the average rating")
 	calculate_correlation_coefficient(complexities, avg_ratings, "complexity of a game", "its average rating")
